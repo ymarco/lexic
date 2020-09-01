@@ -278,10 +278,24 @@ and `lexic-dictionary-path'."
     map)
   "Keymap for `lexic-mode'.")
 
+(defun lexic--fontify-links (&rest rest)
+  (let ((link-address 1)
+        (link-type 2)
+        (link-address-no-protocol 3)
+        (display 4))
+    (add-text-properties )))
+
+;; (("(package!\\_>" (0 (+emacs-lisp-truncate-pin))))
+(defvar lexic--font-lock-keywords
+          '(("\\[\\[\\(\\(file\\|dict\\|img\\|https?\\):\\([-a-zA-Z0-9()@:%_\\+.~#?&//=]*\\)\\)]\\(?:\\[\\([-a-zA-Z0-9()@:%_\\+.~#?&/=\n]\\)*]\\)?]"
+             (0 (lexic--fontify-links))))
+          "TODO")
+
 (define-derived-mode lexic-mode text-mode "lexic"
   "Major mode to look up word through lexic.
 \\{lexic-mode-map}
 Turning on Text mode runs the normal hook `lexic-mode-hook'."
+  (setq font-lock-defaults '(lexic--font-lock-keywords))
   (setq-local text-mode-hook
               (remove #'spell-fu-mode
                       (remove #'flyspell-mode
