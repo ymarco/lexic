@@ -661,10 +661,10 @@ entry."
      :short "Latin English [Lewis]"
      :formatter lexic-format-latin-dicts :priority 7)
     ("Index verbōrum, Appleton (1914)"
-     "Latin English Synonyms [Döderlein]"
+     :short "Latin English Synonyms [Döderlein]"
      :formatter lexic-format-appleton :priority 8)
     ("Hand-book of Latin Synonymes, Döderlein (1875)"
-     "Latin English Synonyms [Döderlein]"
+     :short "Latin English Synonyms [Döderlein]"
      :formatter lexic-format-latin-dicts :priority 9)
     ("Glossarium Anglico-Latinum, Redmond (2005)"
      :short "English Latin [Redomnd]"
@@ -1906,17 +1906,28 @@ https://nikita-moor.github.io/dictionaries/dictionaries.html"
           "<bibl>\\(.*?\\)</bibl>"
           (lambda (match)
             (save-match-data
-              (propertize
-               (->> (match-string 1 match)
-                    (replace-regexp-in-string
-                     "<a href=\"\\(.*?\\)\">\\(.*?\\)</a>"
-                     (lambda (match)
-                       ;; TODO actual link button? that requires access to the buffer...
-                       (propertize (match-string 2 match)
-                                   'face 'link))
-                     (match-string 1 match))
-                    (format "(%s)"))
-               'face 'font-lock-doc-face))))
+              (--> (match-string 1 match)
+                   (format "(%s)" it)
+                   (propertize it 'face 'font-lock-doc-face)
+                   ;; buttonize links
+                   (replace-regexp-in-string
+                    "<a href=\"\\(.*?\\)\">\\(.*?\\)</a>"
+                    (lambda (match)
+                      (require 'browse-url)
+                      (let ((link (match-string 1 match))
+                            (display (match-string 2 match)))
+                        ;; make `display' a button opening `link'
+                        (add-text-properties 0 (length display)
+                                             `(help-echo ,link
+                                                         keymap ,browse-url-button-map
+                                                         face link
+                                                         button t
+                                                         category browse-url
+                                                         browse-url-data ,link)
+                                             display)
+                        display))
+                    it)
+                   (propertize it 'weight 'normal)))))
          (replace-regexp-in-string
           "<b>\\(.*?\\)</b>"
           (lambda (match) (propertize (match-string 1 match) 'face 'bold)))
@@ -1945,7 +1956,6 @@ https://nikita-moor.github.io/dictionaries/dictionaries.html"
                     (setq n (propertize (concat n ". ")
                                         'face '(bold font-lock-constant-face)))
                   (setq n ""))
-                (message "SENSE :first %s :n %s :content %s" is-first-sense n content)
                 (setq is-first-sense nil)
                 (concat indent n content)))))
          (replace-regexp-in-string
@@ -1968,7 +1978,7 @@ https://nikita-moor.github.io/dictionaries/dictionaries.html"
          (replace-regexp-in-string "<quote.*?>\\(.*?\\)</quote>"
                                    (lambda (match)
                                      (propertize (format "❝%s❞" (match-string 1 match))
-                                                         'face 'italic)))
+                                                 'face 'italic)))
 
          (replace-regexp-in-string
           "<usg.*?>\\(.*?\\)</usg>"
