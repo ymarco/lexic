@@ -1892,6 +1892,7 @@ avoid complications when using `mapconcat' with
 
 
 (defun lexic-format-latin-xml (node)
+  "Foramat xml dom NODE and write the result to the current buffer."
   (if (stringp node)
       (lexic--xml-handle-string node)
     ;; (message "node-name: %s" (car node))
